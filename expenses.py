@@ -20,35 +20,42 @@ class Expense(NamedTuple):
     """Структура добавленного в БД нового расхода"""
     amount: int
     category_name: str
+    user_id: int
 
 
-def add_expense(raw_message: str) -> Expense:
+def add_expense(raw_message: str, u_id: int) -> Expense:
     """Добавляет новое сообщение.
     Принимает на вход текст сообщения, пришедшего в бот."""
     parsed_message = _parse_message(raw_message)
+    user_id = u_id
     category = Categories().get_category(
         parsed_message.category_text)
     inserted_row_id = db.insert("expense", {
         "amount": parsed_message.amount,
+        "user_id": user_id,
         "created": _get_now_formatted(),
         "category_codename": category.codename,
         "raw_text": raw_message
     })
     return Expense(amount=parsed_message.amount,
-                   category_name=category.name)
+                   category_name=category.name,
+                   user_id=user_id)
 
 
-def get_today_statistics() -> str:
+def get_today_statistics(u_id: int) -> str:
     """Возвращает строкой статистику расходов за сегодня"""
+    user_id = u_id
     cursor = db.get_cursor()
-    cursor.execute("select sum(amount)"
-                   "from expense where created=current_date")
+    cursor.execute("select sum(amount) "
+                   "from expense where created=current_date "
+                  f"and user_id={user_id}")
     result = cursor.fetchone()
     if not result[0]:
         return "Сегодня ещё нет расходов"
     all_today_expenses = result[0]
     cursor.execute("select sum(amount) "
                    "from expense where created=current_date "
+                  f"and user_id={user_id} "
                    "and category_codename in (select codename "
                    "from category where is_base_expense=true)")
     result = cursor.fetchone()

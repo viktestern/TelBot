@@ -13,6 +13,7 @@ create table category(
 create table expense(
     id integer primary key,
     amount integer,
+    user_id integer,
     created date,
     category_codename integer,
     raw_text text,
