@@ -57,30 +57,25 @@ async def today_statistics(message: types.Message):
 @dp.message_handler(commands=['month'])
 async def month_statistics(message: types.Message):
     """Отправляет статистику трат текущего месяца"""
-    answer_message = expenses.get_month_statistics()
+    answer_message = expenses.get_month_statistics(message.from_user.id)
     await message.answer(answer_message)
 
 
 @dp.message_handler(commands=['expenses'])
 async def list_expenses(message: types.Message):
     """Отправляет последние несколько записей о расходах"""
-    last_expenses = expenses.last()
+    last_expenses = expenses.last(message.from_user.id)
     if not last_expenses:
         await message.answer("Расходы ещё не заведены")
         return
 
     last_expenses_rows = [
         f"{row['amount']} руб. на {row['category_name']} —  нажми "
-        f"/del{row['id']} для удаления"
+         "/del для удаления"
         for row in last_expenses]
     answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* ".join(last_expenses_rows)
     await message.answer(answer_message)
 
-@dp.message_handler(commands=['getid'])
-async def get_user_id(message: types.Message):
-    user_id = message.from_user.id
-    output = "This is your FKN id: {0}".format(user_id)
-    await message.answer(output)
 
 @dp.message_handler()
 async def add_expense(message: types.Message):

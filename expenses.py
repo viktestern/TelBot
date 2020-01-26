@@ -64,19 +64,22 @@ def get_today_statistics(u_id: int) -> str:
             f"За текущий месяц: /month")
 
 
-def get_month_statistics() -> str:
+def get_month_statistics(u_id: int) -> str:
     """Возвращает строкой статистику расходов за текущий месяц"""
+    user_id = u_id
     now = _get_now_datetime()
     first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
     cursor = db.get_cursor()
     cursor.execute(f"select sum(amount) "
-                   f"from expense where created >= '{first_day_of_month}'")
+                   f"from expense where created >= '{first_day_of_month}' "
+                   f"and user_id={user_id}")
     result = cursor.fetchone()
     if not result[0]:
         return "В этом месяце ещё нет расходов"
     all_today_expenses = result[0]
     cursor.execute(f"select sum(amount) "
                    f"from expense where created >= '{first_day_of_month}' "
+                   f"and user_id={user_id} "
                    f"and category_codename in (select codename "
                    f"from category where is_base_expense=true)")
     result = cursor.fetchone()
@@ -87,22 +90,26 @@ def get_month_statistics() -> str:
             f"{now.day * _get_budget_limit()} руб.")
 
 
-def last():
+def last(u_id: int):
     """Возвращает последние несколько расходов"""
+    user_id = u_id
     cursor = db.get_cursor()
     cursor.execute(
-        "select e.id, e.amount, c.name "
+        "select e.id, e.amount, e.user_id, c.name "
         "from expense e left join category c "
         "on c.codename=e.category_codename "
         "order by created desc limit 10")
     rows = cursor.fetchall()
     last_expenses = []
     for row in rows:
-        last_expenses.append({
-            'amount': row[1],
-            'id': row[0],
-            'category_name': row[2]
-        })
+        if int(row[2]) == int(user_id):
+            last_expenses.append({
+                'amount': row[1],
+                'id': row[0],
+                'category_name': row[3]
+            })
+        else:
+            pass
     return last_expenses
 
 
