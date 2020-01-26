@@ -9,12 +9,12 @@ import exceptions
 import expenses
 from categories import Categories
 
+
 logging.basicConfig(level=logging.INFO)
 
-API_TOKEN = "1059542923:AAGbXtxMxHvcd9p8Y_7NlkM4Wulm47FL8c0"
-PROXY_URL = "http://54.251.183.245:3128" 
+API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 
-bot = Bot(token=API_TOKEN, proxy=PROXY_URL)
+bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
 @dp.message_handler(commands=['start', 'help'])
