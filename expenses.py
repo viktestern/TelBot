@@ -20,7 +20,6 @@ class Expense(NamedTuple):
     """Структура добавленного в БД нового расхода"""
     amount: int
     category_name: str
-    user_id: int
 
 
 def add_expense(raw_message: str, u_id: int) -> Expense:
@@ -38,8 +37,7 @@ def add_expense(raw_message: str, u_id: int) -> Expense:
         "raw_text": raw_message
     })
     return Expense(amount=parsed_message.amount,
-                   category_name=category.name,
-                   user_id=user_id)
+                   category_name=category.name)
 
 
 def get_today_statistics(u_id: int) -> str:
